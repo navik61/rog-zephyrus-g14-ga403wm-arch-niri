@@ -1,0 +1,23 @@
+#!/bin/sh
+# Workaround pro NVIDIA/open-gpu-kernel-modules#1507: na jádře 7.3+ nv-probe kthread
+# neotevře /sys/bus/pci/.../config (kthready běží v nullfs) -> RTD3 "Not supported".
+# Rebind z procesního kontextu to opraví. Musí běžet dřív, než kartu kdokoli otevře.
+# Odstranit, až to opraví ovladač (zkontroluj: grep 'Runtime D3' /proc/driver/nvidia/gpus/*/power).
+for p in /proc/driver/nvidia/gpus/*/power; do
+    [ -e "$p" ] || exit 0
+    grep -q 'Runtime D3 status: *Not supported' "$p" || continue
+    bdf=$(basename "$(dirname "$p")")
+    # Nikdo nesmí zařízení držet, jinak unbind visí ("non-zero usage count").
+    if fuser -s /dev/nvidia* /dev/dri/by-path/pci-$bdf-* 2>/dev/null; then
+        echo "nvidia-rtd3-rebind: $bdf je používáno, přeskakuji"; continue
+    fi
+    # rmmod, ne modprobe -r: to by odebralo i samotný modul nvidia (nepoužitou závislost)
+    # a /sys/bus/pci/drivers/nvidia by zmizel.
+    for m in nvidia_drm nvidia_modeset nvidia_uvm; do
+        if grep -q "^$m " /proc/modules; then rmmod "$m" || { echo "nelze odebrat $m"; continue 2; }; fi
+    done
+    echo "$bdf" > /sys/bus/pci/drivers/nvidia/unbind
+    echo "$bdf" > /sys/bus/pci/drivers/nvidia/bind
+    modprobe nvidia_drm; modprobe nvidia_uvm
+    echo "nvidia-rtd3-rebind: $bdf -> $(grep 'Runtime D3' /proc/driver/nvidia/gpus/$bdf/power)"
+done

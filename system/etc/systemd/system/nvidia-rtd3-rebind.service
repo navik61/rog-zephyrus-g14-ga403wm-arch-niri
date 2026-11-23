@@ -1,0 +1,14 @@
+[Unit]
+Description=Rebind NVIDIA GPU to enable RTD3 (workaround open-gpu-kernel-modules#1507)
+After=systemd-modules-load.service systemd-udevd.service
+Before=nvidia-powerd.service nvidia-persistenced.service supergfxd.service display-manager.service systemd-user-sessions.service
+ConditionPathExists=/sys/bus/pci/drivers/nvidia
+
+[Service]
+Type=oneshot
+ExecStartPre=/usr/bin/udevadm settle --timeout=30
+ExecStart=/usr/local/sbin/nvidia-rtd3-rebind
+TimeoutStartSec=60
+
+[Install]
+WantedBy=multi-user.target

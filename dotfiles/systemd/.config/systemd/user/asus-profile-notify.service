@@ -1,0 +1,10 @@
+[Unit]
+Description=Notifikace při změně ASUS power/fan profilu
+
+[Service]
+ExecStart=%h/.config/niri/scripts/asus-profile-watch.sh
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

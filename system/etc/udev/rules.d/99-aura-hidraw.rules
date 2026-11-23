@@ -1,0 +1,3 @@
+# Stabilní symlink na ITE Tech ROG G14 klávesnici (HID_ID 0003:0B05:19B6)
+# nezávislý na tom, jaké číslo /dev/hidrawN zařízení dostane při bootu.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="19b6", SYMLINK+="aura-hidraw"

@@ -1,0 +1,2 @@
+ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="0489", ATTRS{idProduct}=="e11e", ATTR{power/control}="on"
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device"

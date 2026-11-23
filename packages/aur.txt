@@ -1,0 +1,5 @@
+# AUR (paru/yay)
+supergfxctl          # přepínání režimu GPU (Hybrid/Integrated/…)
+wl-gammarelay-rs     # teplota barev/jas – používá niri/scripts/sleep_modes.sh
+kando-bin            # radiální menu (Mod+S)
+displaylink evdi-dkms  # jen pro DisplayLink dock (viz docs/niri-displaylink.md)

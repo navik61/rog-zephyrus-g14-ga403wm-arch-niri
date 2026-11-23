@@ -1,0 +1,14 @@
+[Unit]
+Description=Idle monitor power-off
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/swayidle -w \
+  timeout 600 'niri msg action power-off-monitors' \
+  resume 'niri msg action power-on-monitors'
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

@@ -1,0 +1,3 @@
+export DRI_PRIME=pci-0000_65_00_0
+export NIRI_DRM_DEVICES=/dev/dri/card1
+export NIRI_RENDER_NODE=/dev/dri/renderD128

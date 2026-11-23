@@ -1,0 +1,20 @@
+# Základ + boot (systemd-boot + UKI přes mkinitcpio)
+base base-devel linux linux-headers linux-firmware-amd linux-firmware-amdgpu linux-firmware-cirrus linux-firmware-mediatek linux-firmware-other
+amd-ucode sof-firmware efibootmgr sbctl zram-generator reflector pacman-contrib dkms
+
+# GPU – AMD iGPU (Radeon 880M/890M) + NVIDIA dGPU (RTX 5060, Blackwell → jen open moduly)
+mesa vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader vulkan-tools libva-utils radeontop nvtop
+nvidia-open-dkms nvidia-utils lib32-nvidia-utils nvidia-settings nvidia-prime libva-nvidia-driver
+
+# ASUS
+asusctl rog-control-center keyd hid-tools
+
+# Desktop: niri + uwsm + noctalia
+niri uwsm noctalia xwayland-satellite
+xdg-desktop-portal xdg-desktop-portal-gnome xdg-desktop-portal-gtk
+swayidle swaylock fuzzel rofi rofi-emoji kitty foot udiskie brightnessctl ddcutil playerctl libnotify inotify-tools
+qt5-wayland qt6-wayland qt5ct qt6ct adw-gtk-theme breeze
+pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber
+mpd mpd-mpris
+python python-gobject
+stow

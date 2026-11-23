@@ -1,0 +1,74 @@
+* {
+    background:     {{colors.background.default.hex}}CC;
+    background-alt: {{colors.surface_container.default.hex}}CD;
+    foreground:     {{colors.on_background.default.hex}};
+    selected:       {{colors.primary_container.default.hex}}EE;
+    active:         {{colors.primary.default.hex}};
+    urgent:         {{colors.error.default.hex}};
+}
+
+window {
+    background-color: @background;
+    border-color:     @active;
+    border:           2px;
+    padding:          15px;
+    transparency:     "real";
+}
+
+mainbox {
+    background-color: transparent;
+    children:         [ inputbar, listview ];
+    spacing:          10px;
+}
+
+inputbar {
+    background-color: @background-alt;
+    text-color:       @foreground;
+    border-radius:    8px;
+    padding:          12px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    background-color: transparent;
+    text-color:       @active;
+    padding:          0px 10px 0px 0px;
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @foreground;
+    placeholder:      "Search...";
+    placeholder-color: {{colors.outline.default.hex}};
+}
+
+listview {
+    background-color: transparent;
+    columns:          1;
+    lines:            8;
+    spacing:          5px;
+    scrollbar:        false;
+}
+
+element {
+    background-color: transparent;
+    text-color:       @foreground;
+    padding:          10px;
+    border-radius:    6px;
+}
+
+element selected {
+    background-color: @selected;
+    text-color:       {{colors.on_primary_container.default.hex}};
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+}
+
+element-icon {
+    background-color: transparent;
+    size:             1.2em;
+    padding:          0px 10px 0px 0px;
+}
