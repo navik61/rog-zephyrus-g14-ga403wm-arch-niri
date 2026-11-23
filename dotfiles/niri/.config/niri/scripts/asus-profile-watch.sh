@@ -1,17 +1,17 @@
 #!/bin/bash
-# Notifikace při změně ASUS power/fan profilu.
-# Sleduje /sys/firmware/acpi/platform_profile přes inotify - funguje
-# nezávisle na tom, čím byla změna vyvolána (Fn+F5, asusctl, cokoliv jiného),
-# takže nehrozí kolize s nativním cyklením klávesy.
+# Notification when the ASUS power/fan profile changes.
+# Watches /sys/firmware/acpi/platform_profile via inotify - works
+# regardless of what triggered the change (Fn+F5, asusctl, anything else),
+# so it never collides with the key's native cycling.
 
 FILE="/sys/firmware/acpi/platform_profile"
 LAST=""
 
 label_and_icon() {
     case "$1" in
-        quiet)       echo "Tichý|weather-clear-night-symbolic" ;;
-        balanced)    echo "Vyvážený|weather-few-clouds-symbolic" ;;
-        performance) echo "Výkonnostní|weather-storm-symbolic" ;;
+        quiet)       echo "Quiet|weather-clear-night-symbolic" ;;
+        balanced)    echo "Balanced|weather-few-clouds-symbolic" ;;
+        performance) echo "Performance|weather-storm-symbolic" ;;
         *)           echo "$1|dialog-information-symbolic" ;;
     esac
 }
@@ -30,16 +30,16 @@ notify_if_changed() {
         --urgency=low \
         --expire-time=2500 \
         --icon="$icon" \
-        --app-name="ASUS Profil" \
+        --app-name="ASUS Profile" \
         --replace-id=91177 \
-        "Power profil" "$label"
+        "Power profile" "$label"
 }
 
-# Inicializační stav - bez notifikace hned při startu služby
+# Initial state - no notification right when the service starts
 LAST=$(cat "$FILE" 2>/dev/null)
 
 inotifywait -m -e modify --format '%e' "$FILE" 2>/dev/null | while read -r _; do
-    # sysfs atributy občas pošlou víc MODIFY eventů za sebou - debounce
+    # sysfs attributes sometimes fire several MODIFY events in a row - debounce
     sleep 0.1
     notify_if_changed
 done

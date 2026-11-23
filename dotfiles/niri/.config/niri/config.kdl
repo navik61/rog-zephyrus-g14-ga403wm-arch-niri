@@ -322,7 +322,7 @@ layout {
 
 // This line starts waybar, a commonly used bar for Wayland compositors.
 // spawn-at-startup "waybar"
-//spawn-at-startup "qs" "-c" "noctalia-shell" spusteno cestou service
+//spawn-at-startup "qs" "-c" "noctalia-shell" started via noctalia.service
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
 // spawn-sh-at-startup "qs -c ~/source/qs/MyAwesomeShell"
 
@@ -338,11 +338,11 @@ spawn-at-startup "uwsm" "app" "--" "mpd"
 spawn-at-startup "uwsm" "app" "--" "udiskie"
 spawn-at-startup "uwsm" "app" "--" "mpd-mpris"
 spawn-at-startup "uwsm" "app" "--" "noctalia"
-// obnova uloženého sezení (kitty, zen, poznámky…) – viz docs/niri-sezeni.md
+// restore the saved window session (kitty, zen, notes…) – see docs/niri-sezeni.en.md
 spawn-sh-at-startup "~/.local/bin/sezeni -n"
 // spawn-at-startup "wl-gammarelay-rs"
 spawn-at-startup "asusctl" "profile" "set" "balanced"
-// spawn-at-startup "uwsm" "app" "--" "~/.local/bin/kurzor"  // spouští se přes kurzor.service
+// spawn-at-startup "uwsm" "app" "--" "~/.local/bin/kurzor"  // started via kurzor.service
 // spawn-at-startup "uwsm" "app" "--" "imv"  "~/Templates/poznamkau.svg"
 
 
@@ -424,18 +424,18 @@ window-rule {
     default-window-height { fixed 480; }
 }
 
-// Slovniky
+// Dictionaries (vocabulary trainer)
 window-rule {
     match app-id=r"kitty-float"
     open-floating true
-    // rozměry musí odpovídat OKNO_SIRKA/OKNO_VYSKA v skriptu, který kitty-float okno otevírá
+    // size must match the script that opens the kitty-float window
     default-column-width { fixed 820; }
     default-window-height { fixed 380; }
     focus-ring { off; }
     border { off; }
 }
 
-// fzfex – nabídka „Otevřít v…“ (https://github.com/navik61/fzfex)
+// fzfex – "Open with…" menu (https://github.com/navik61/fzfex)
 window-rule {
     match app-id=r"^cz\.fzfex\.menu$"
     open-floating true
@@ -452,7 +452,7 @@ window-rule {
     default-window-height { fixed 480; }
 }
 
-// Zen Browser (založen na Firefoxu, app-id ověř přes: niri msg windows)
+// Zen Browser (Firefox-based, check app-id with: niri msg windows)
 window-rule {
     match app-id="^zen" title="^(Picture-in-Picture|Obraz v obraze)$"
     open-floating true
@@ -693,7 +693,7 @@ debug {
 }
 
 binds {
-    Mod+S hotkey-overlay-title="Kando: Nastavení" { spawn "kando" "--trigger" "nastaveni"; }
+    Mod+S hotkey-overlay-title="Kando: Settings" { spawn "kando" "--trigger" "nastaveni"; }
     // Keys consist of modifiers separated by + signs, followed by an XKB key name
     // in the end. To find an XKB name for a particular key, you may use a program
     // like wev.
@@ -716,7 +716,7 @@ binds {
     Ctrl+Space hotkey-overlay-title="Run an Application: rofi" {
     spawn "bash" "-c" "rofi -matching fuzzy -show run -run-command 'uwsm app -- {cmd}'";
     }
-    // Výběr emoji (rofi-emoji + wtype): Enter = vložit, Ctrl+C = jen zkopírovat, Shift+Enter = menu
+    // Emoji picker (rofi-emoji + wtype): Enter = insert, Ctrl+C = copy only, Shift+Enter = menu
     Mod+Semicolon hotkey-overlay-title="Emoji: rofi-emoji" {
     spawn "rofi" "-modi" "emoji" "-show" "emoji" "-matching" "fuzzy" "-kb-secondary-copy" "" "-kb-custom-1" "Ctrl+c" "-theme-str" "window { width: 35%; }";
     }
@@ -750,7 +750,7 @@ binds {
     XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "+10%"; }
     XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "10%-"; }
 
-    // Přepínání režimů pro spánek (Mod + 1-5)
+    // Time-of-day brightness/color modes (Ctrl + 1-5)
     Ctrl+1 { spawn "~/.config/niri/scripts/sleep_modes.sh" "1"; }
     Ctrl+2 { spawn "~/.config/niri/scripts/sleep_modes.sh" "2"; }
     Ctrl+3 { spawn "~/.config/niri/scripts/sleep_modes.sh" "3"; }
@@ -781,8 +781,8 @@ binds {
     Mod+Ctrl+J     { move-window-down; }
     Mod+Ctrl+K     { move-window-up; }
     Mod+Ctrl+L     { move-column-right; }
-    Mod+Alt+Left   { move-column-left; }  // shodné s Hyprland Mod+Alt+šipky
-    Mod+Alt+Down   { move-window-down; }  // přesun okna v layoutu
+    Mod+Alt+Left   { move-column-left; }  // same as Hyprland Mod+Alt+arrows
+    Mod+Alt+Down   { move-window-down; }  // move window within the layout
     Mod+Alt+Up     { move-window-up; }
     Mod+Alt+Right  { move-column-right; }
 
@@ -798,7 +798,7 @@ binds {
     Mod+Ctrl+Home { move-column-to-first; }
     Mod+Ctrl+End  { move-column-to-last; }
 
-    // Monitor fokus - shodné s Hyprland: Alt+šipky + bonus HJKL
+    // Monitor focus - same as Hyprland: Alt+arrows + bonus HJKL
     Alt+Left  { focus-monitor-left; }
     Alt+Right { focus-monitor-right; }
     Alt+Up    { focus-monitor-up; }
@@ -816,7 +816,7 @@ binds {
     Mod+Shift+Ctrl+J     { move-column-to-monitor-down; }
     Mod+Shift+Ctrl+K     { move-column-to-monitor-up; }
     Mod+Shift+Ctrl+L     { move-column-to-monitor-right; }
-    // Alias: Alt+Shift = přesun okna na monitor (rozšíření Alt = monitor fokus)
+    // Alias: Alt+Shift = move window to monitor (extends Alt = monitor focus)
     Alt+Shift+Left  { move-window-to-monitor-left; }
     Alt+Shift+Right { move-window-to-monitor-right; }
     Alt+Shift+Up    { move-window-to-monitor-up; }
@@ -910,7 +910,7 @@ binds {
     Mod+Ctrl+7 { move-column-to-workspace 7; }
     Mod+Ctrl+8 { move-column-to-workspace 8; }
     Mod+Ctrl+9 { move-column-to-workspace 9; }
-    Mod+Shift+1 { move-column-to-workspace 1; } // shodné s Hyprland
+    Mod+Shift+1 { move-column-to-workspace 1; } // same as Hyprland
     Mod+Shift+2 { move-column-to-workspace 2; }
     Mod+Shift+3 { move-column-to-workspace 3; }
     Mod+Shift+4 { move-column-to-workspace 4; }
@@ -949,7 +949,7 @@ binds {
     // Makes the column "fill the rest of the space".
     Mod+Ctrl+F { expand-column-to-available-width; }
 
-    Mod+Shift+C { center-column; } // přemapováno z Mod+C (kolize s close-window)
+    Mod+Shift+C { center-column; } // remapped from Mod+C (conflicts with close-window)
 
     // Center all fully visible columns on screen.
     Mod+Ctrl+C { center-visible-columns; } // Mod+Shift+C = center focused, Mod+Ctrl+C = center all
@@ -969,7 +969,7 @@ binds {
     Mod+Shift+Minus { set-window-height "-3%"; }
     Mod+Shift+Equal { set-window-height "+3"; }
 
-    // Resize šipky - shodné s Hyprland: Mod+Shift+šipky
+    // Resize with arrows - same as Hyprland: Mod+Shift+arrows
     Mod+Shift+Right { set-column-width "+1%"; }
     Mod+Shift+Left  { set-column-width "-1%"; }
     Mod+Shift+Down  { set-window-height "+1%"; }
@@ -980,7 +980,7 @@ binds {
     Mod+Shift+V { switch-focus-between-floating-and-tiling; }
 
     // Toggle tabbed column display mode.
-    Mod+Apostrophe { toggle-column-tabbed-display; } // přemapováno z Mod+W (kolize s wallpaper scriptem v Hyprland)
+    Mod+Apostrophe { toggle-column-tabbed-display; } // remapped from Mod+W (conflicts with the wallpaper script in Hyprland)
 
     // Actions to switch layouts.
     // Note: if you uncomment these, make sure you do NOT have
@@ -990,14 +990,14 @@ binds {
     Mod+Space       { switch-layout "next"; }
     // Mod+Shift+Space { switch-layout "prev"; }
 
-    Mod+Shift+S      { screenshot; }              // shodné s Hyprland Shift+Print → celá obrazovka/region
+    Mod+Shift+S      { screenshot; }              // same as Hyprland Shift+Print → full screen/region
     Mod+Shift+W      { screenshot-window; }       // alias
-    Mod+Shift+M       { screenshot-screen; }       // niri-specifické: celá obrazovka
+    Mod+Shift+M       { screenshot-screen; }       // niri-specific: full screen
 
-    // Print klávesa (externí klávesnice)
+    // Print key (external keyboard)
     Print            { screenshot-window; }
     Shift+Print      { screenshot-screen; }
-    // Copilot klávesa: firmware posílá Super+Shift+F23, keyd z F23 dělá Print
+    // Copilot key: firmware sends Super+Shift+F23, keyd turns F23 into Print
     Mod+Shift+Print      { screenshot-window; }   // Copilot
     Ctrl+Mod+Shift+Print { screenshot-screen; }   // Ctrl+Copilot
 

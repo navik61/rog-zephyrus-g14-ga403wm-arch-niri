@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-Watcher pro fyzickou AURA klávesu (Fn+F4) na ASUS ROG G14 (GA403WM).
+Watcher for the physical AURA key (Fn+F4) on the ASUS ROG G14 (GA403WM).
 
-Klávesa posílá vlastní 2bajtový HID report (Report ID 0x5a / 90,
-Vendor Usage Page 0xff31), který kernelový driver hid-asus.c vůbec
-nezpracovává (stará se jen o Report ID 1 - standardní klávesnici).
-Tenhle skript čte syrové reporty přímo z /dev/hidraw0 (nebo stabilního
-symlinku vytvořeného udev pravidlem) a na stisk (0x5a 0xb3) spustí
-asusctl pro cyklení Aura RGB efektů.
+The key sends its own 2-byte HID report (Report ID 0x5a / 90,
+Vendor Usage Page 0xff31), which the kernel driver hid-asus.c does not
+handle at all (it only handles Report ID 1 - the standard keyboard).
+This script reads raw reports directly from /dev/hidraw0 (or the stable
+symlink created by the udev rule) and on key press (0x5a 0xb3) runs
+asusctl to cycle Aura RGB effects.
 """
 
 import subprocess
 import sys
 
-DEVICE = "/dev/aura-hidraw"  # stabilní symlink z udev pravidla
+DEVICE = "/dev/aura-hidraw"  # stable symlink from the udev rule
 PRESS = bytes([0x5a, 0xb3])
 READ_SIZE = 64
 
@@ -33,11 +33,11 @@ def main():
                 if len(data) >= 2 and data[0:2] == PRESS:
                     trigger()
     except FileNotFoundError:
-        print(f"Zařízení {DEVICE} nenalezeno - zkontroluj udev pravidlo.",
+        print(f"Device {DEVICE} not found - check the udev rule.",
               file=sys.stderr)
         sys.exit(1)
     except PermissionError:
-        print(f"Nedostatečná oprávnění pro {DEVICE} - služba musí běžet jako root.",
+        print(f"Insufficient permissions for {DEVICE} - the service must run as root.",
               file=sys.stderr)
         sys.exit(1)
 

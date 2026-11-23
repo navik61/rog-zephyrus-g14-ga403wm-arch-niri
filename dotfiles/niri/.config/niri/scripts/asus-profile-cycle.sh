@@ -1,37 +1,37 @@
 #!/bin/bash
-# Cyklické přepnutí ASUS power/fan profilu (asusctl) + desktop notifikace
-# Použití: bind na Fn+F5 (nebo jinou klávesu) v niri configu
+# Cycle the ASUS power/fan profile (asusctl) + desktop notification
+# Usage: bind to Fn+F5 (or another key) in the niri config
 
 set -euo pipefail
 
-# Přepni na další profil v cyklu (Quiet -> Balanced -> Performance -> Quiet)
+# Switch to the next profile in the cycle (Quiet -> Balanced -> Performance -> Quiet)
 asusctl profile -n >/dev/null 2>&1
 
-# Krátká pauza, aby EC/daemon stihl stav zapsat před čtením
+# Short pause so the EC/daemon can write the state before we read it
 sleep 0.15
 
-# Zjisti aktuální profil (parsování výstupu "asusctl profile get")
+# Get the current profile (parse the output of "asusctl profile get")
 RAW=$(asusctl profile get 2>/dev/null)
 PROFILE=$(echo "$RAW" | grep -oiE 'quiet|balanced|performance' | head -1)
 
-# Fallback, kdyby se parsování nepovedlo
+# Fallback in case parsing failed
 if [ -z "$PROFILE" ]; then
     PROFILE="$RAW"
 fi
 
-# Ikona a barva podle profilu (uprav cesty/jména dle svého icon setu, nebo nech prázdné)
+# Icon and label per profile (adjust icon names to your icon set, or leave empty)
 case "$(echo "$PROFILE" | tr '[:upper:]' '[:lower:]')" in
     quiet)
         ICON="weather-clear-night-symbolic"
-        LABEL="Tichý"
+        LABEL="Quiet"
         ;;
     balanced)
         ICON="weather-few-clouds-symbolic"
-        LABEL="Vyvážený"
+        LABEL="Balanced"
         ;;
     performance)
         ICON="weather-storm-symbolic"
-        LABEL="Výkonnostní"
+        LABEL="Performance"
         ;;
     *)
         ICON="dialog-information-symbolic"
@@ -43,6 +43,6 @@ notify-send \
     --urgency=low \
     --expire-time=2500 \
     --icon="$ICON" \
-    --app-name="ASUS Profil" \
+    --app-name="ASUS Profile" \
     --replace-id=91177 \
-    "Power profil" "$LABEL"
+    "Power profile" "$LABEL"

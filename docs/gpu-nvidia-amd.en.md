@@ -168,7 +168,7 @@ from a regular process.
 ### `/usr/local/sbin/nvidia-rtd3-rebind` (`chmod 755`)
 
 The script is in this repo: [`system/usr/local/sbin/nvidia-rtd3-rebind`](../system/usr/local/sbin/nvidia-rtd3-rebind)
-(comments in Czech). What it does, for each NVIDIA GPU reporting `Runtime D3 status: Not supported`:
+What it does, for each NVIDIA GPU reporting `Runtime D3 status: Not supported`:
 
 1. skips the card if anyone holds `/dev/nvidia*` or its DRM nodes (`fuser`) — otherwise
    unbind would hang;

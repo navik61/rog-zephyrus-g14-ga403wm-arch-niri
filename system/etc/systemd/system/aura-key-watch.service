@@ -1,5 +1,5 @@
 [Unit]
-Description=Watcher pro fyzickou AURA klávesu (Fn+F4) - cyklení RGB efektů
+Description=Watcher for the physical AURA key (Fn+F4) - cycles RGB effects
 After=multi-user.target asusd.service
 Wants=asusd.service
 

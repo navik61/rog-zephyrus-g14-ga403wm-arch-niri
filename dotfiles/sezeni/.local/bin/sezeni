@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""sezeni – uložení a obnovení sezení oken v niri.
+"""sezeni – save and restore window sessions in niri ("sezeni" = Czech for "session").
 
-  sezeni -a           zeptá se na název a uloží aktuální sezení
-  sezeni -n [NAZEV]   obnoví sezení (bez názvu výchozí = naposledy uložené)
-  sezeni -l           vypíše uložená sezení
-  sezeni -v NAZEV     nastaví výchozí sezení (to se načítá při startu niri)
+  sezeni -a           ask for a name and save the current session
+  sezeni -n [NAME]    restore a session (no name = default = last saved)
+  sezeni -l           list saved sessions
+  sezeni -v NAME      set the default session (restored when niri starts)
 """
 
 import json
@@ -15,20 +15,20 @@ import sys
 import time
 
 ADRESAR = os.path.expanduser("~/.config/niri/sezeni")
-VYCHOZI = os.path.join(ADRESAR, "vychozi.json")  # symlink na výchozí sezení
+VYCHOZI = os.path.join(ADRESAR, "vychozi.json")  # symlink to the default session
 
-# Ukládají se jen tato okna (app-id): kitty, zen a poznámky.
+# Only these windows (app-id) are saved: kitty, zen and notes.
 POVOLENE_APP_ID = re.compile(r"^(kitty|zen|cz\.poznamka\.view)$")
 
-# Proměnné prostředí, které se ukládají (jen pokud se liší od prostředí niri).
-# Záměrně whitelist – celé prostředí shellu by obsahovalo i tajné klíče/tokeny.
+# Environment variables that are saved (only if they differ from niri's environment).
+# Deliberately a whitelist – the full shell environment would include secret keys/tokens.
 UKLADANE_PROMENNE = re.compile(
     r"^(POZNAMKA_\w+|GDK_SCALE|GDK_DPI_SCALE|QT_SCALE_FACTOR|QT_QPA_PLATFORM|GTK_THEME)$")
 
 SHELLY = {"zsh", "bash", "fish", "sh", "dash", "nu", "elvish"}
 
-TIMEOUT_OKNA = 30.0       # jak dlouho čekat na otevření okna (s)
-TIMEOUT_DALSIHO = 5.0     # další okno téhož procesu (např. prohlížeč s obnovou relace)
+TIMEOUT_OKNA = 30.0       # how long to wait for a window to open (s)
+TIMEOUT_DALSIHO = 5.0     # another window of the same process (e.g. a browser restoring its session)
 
 
 # ---------------------------------------------------------------- niri IPC
@@ -43,7 +43,7 @@ def akce(*args):
     r = subprocess.run(["niri", "msg", "action", *map(str, args)],
                        capture_output=True, text=True)
     if r.returncode != 0:
-        print(f"varování: niri msg action {' '.join(map(str, args))}: "
+        print(f"warning: niri msg action {' '.join(map(str, args))}: "
               f"{r.stderr.strip()}", file=sys.stderr)
 
 
@@ -90,10 +90,10 @@ def niri_pid():
     return int(pidy[0]) if pidy else None
 
 
-# ---------------------------------------------------------------- ukládání
+# ---------------------------------------------------------------- saving
 
 def prikaz_okna(okno):
-    """Vrátí (prikaz, cwd, env) pro znovuspuštění okna, nebo None."""
+    """Return (command, cwd, env) to relaunch the window, or None."""
     pid = okno["pid"]
     cmd = cti(f"/proc/{pid}/cmdline", nulove=True)
     if not cmd:
@@ -104,7 +104,7 @@ def prikaz_okna(okno):
     if jmeno == "zen-bin":                     # wrapper zen-browser
         cmd = ["zen-browser"]
     elif jmeno == "kitty":
-        # pracovní adresář shellu uvnitř kitty
+        # working directory of the shell inside kitty
         for d in deti(pid):
             if (cti(f"/proc/{d}/comm") or "") in SHELLY:
                 adresar = cwd(d)
@@ -112,7 +112,7 @@ def prikaz_okna(okno):
         cmd = ["kitty", *[a for a in cmd[1:] if not a.startswith("--directory")],
                "--directory", adresar]
 
-    # proměnné prostředí navíc oproti niri (např. POZNAMKA_ZOOM=1.5)
+    # environment variables in addition to niri (e.g. POZNAMKA_ZOOM=1.5)
     env = {}
     npid = niri_pid()
     if npid and jmeno != "zen-bin":
@@ -131,7 +131,7 @@ def ulozit_sezeni(nazev):
             continue
         spusteni = prikaz_okna(o)
         if spusteni is None:
-            print(f"přeskakuji okno {o['app_id']} (nelze zjistit příkaz)", file=sys.stderr)
+            print(f"skipping window {o['app_id']} (cannot determine command)", file=sys.stderr)
             continue
         cmd, adresar, env = spusteni
         ws = workspaces.get(o["workspace_id"], {})
@@ -165,30 +165,30 @@ def ulozit_sezeni(nazev):
         json.dump({"nazev": nazev, "ulozeno": time.strftime("%Y-%m-%d %H:%M:%S"),
                    "okna": seznam}, f, ensure_ascii=False, indent=2)
     nastavit_vychozi(nazev, tise=True)
-    print(f"Uloženo {len(seznam)} oken do {cesta} (nastaveno jako výchozí).")
-    notifikace(f"Sezení „{nazev}“ uloženo ({len(seznam)} oken)")
+    print(f"Saved {len(seznam)} windows to {cesta} (set as default).")
+    notifikace(f"Session \"{nazev}\" saved ({len(seznam)} windows)")
 
 
 def zeptat_se_na_nazev():
     existujici = sorted(n for n in nazvy_sezeni())
     if sys.stdin.isatty():
         if existujici:
-            print("Existující sezení: " + ", ".join(existujici))
-        nazev = input("Název sezení: ").strip()
-    else:  # spuštěno bez terminálu (klávesová zkratka) → fuzzel
-        r = subprocess.run(["fuzzel", "--dmenu", "--prompt", "Název sezení: "],
+            print("Existing sessions: " + ", ".join(existujici))
+        nazev = input("Session name: ").strip()
+    else:  # started without a terminal (key binding) → fuzzel
+        r = subprocess.run(["fuzzel", "--dmenu", "--prompt", "Session name: "],
                            input="\n".join(existujici), capture_output=True, text=True)
         nazev = r.stdout.strip()
     nazev = re.sub(r"[/\x00]", "_", nazev)
     if not nazev or nazev == "vychozi":
-        sys.exit("Neplatný nebo prázdný název, nic neuloženo.")
+        sys.exit("Invalid or empty name, nothing saved.")
     if nazev in existujici and sys.stdin.isatty():
-        if input(f"Sezení „{nazev}“ existuje, přepsat? [a/N] ").strip().lower() not in ("a", "y"):
-            sys.exit("Zrušeno.")
+        if input(f"Session \"{nazev}\" exists, overwrite? [y/N] ").strip().lower() not in ("a", "y"):
+            sys.exit("Cancelled.")
     return nazev
 
 
-# ---------------------------------------------------------------- obnova
+# ---------------------------------------------------------------- restore
 
 def spustit(z):
     env = os.environ.copy()
@@ -202,7 +202,7 @@ def spustit(z):
                          stderr=subprocess.DEVNULL)
         return True
     except OSError as e:
-        print(f"nelze spustit {z['cmd']}: {e}", file=sys.stderr)
+        print(f"cannot start {z['cmd']}: {e}", file=sys.stderr)
         return False
 
 
@@ -225,7 +225,7 @@ def zamerit_workspace(z, vystupy):
 
 
 def umistit(o, z, vystupy):
-    """Přesune okno o na správný výstup/workspace a nastaví plovoucí stav."""
+    """Move window o to the right output/workspace and set its floating state."""
     wid = o["id"]
     workspaces = {w["id"]: w for w in niri_json("workspaces")}
     ws = workspaces.get(o["workspace_id"], {})
@@ -245,13 +245,13 @@ def obnovit_sezeni(cesta):
         data = json.load(f)
     zaznamy = data["okna"]
     vystupy = set(niri_json("outputs"))
-    obsazena = set(okna())          # okna, která už běží, se nepoužijí
+    obsazena = set(okna())          # windows already running are not reused
     spustene_skupiny = set()
-    posledni_v_ws = {}              # (output, ws) -> id posledního dlaždicového okna
-    sloupce = {}                    # (output, ws, column) -> [(id, záznam)]
-    obnovena = []                   # (id, záznam)
+    posledni_v_ws = {}              # (output, ws) -> id of the last tiled window
+    sloupce = {}                    # (output, ws, column) -> [(id, record)]
+    obnovena = []                   # (id, record)
 
-    # nejdřív dlaždice v pořadí sloupců, pak plovoucí okna
+    # tiles first in column order, then floating windows
     def klic(z):
         return (z["floating"], z.get("output") or "", z.get("workspace_idx") or 0,
                 z.get("column", 0), z.get("tile", 0))
@@ -265,7 +265,7 @@ def obnovit_sezeni(cesta):
         o = None
         skupina = (z["app_id"], z.get("pid_skupina"))
         if skupina in spustene_skupiny:
-            # další okno téhož procesu se mohlo otevřít samo
+            # another window of the same process may have opened by itself
             o = pockat_na_okno(z["app_id"], obsazena, TIMEOUT_DALSIHO)
         if o is None:
             if not spustit(z):
@@ -273,7 +273,7 @@ def obnovit_sezeni(cesta):
             spustene_skupiny.add(skupina)
             o = pockat_na_okno(z["app_id"], obsazena, TIMEOUT_OKNA)
         if o is None:
-            print(f"okno {z['app_id']} se neobjevilo, přeskakuji", file=sys.stderr)
+            print(f"window {z['app_id']} did not appear, skipping", file=sys.stderr)
             continue
         wid = o["id"]
         obsazena.add(wid)
@@ -285,7 +285,7 @@ def obnovit_sezeni(cesta):
             akce("move-floating-window", "--id", wid, "-x", z["x"], "-y", z["y"])
         else:
             sl_klic = (*ws_klic, z["column"])
-            if sl_klic in sloupce:          # patří do už existujícího sloupce vlevo
+            if sl_klic in sloupce:          # belongs to an existing column on the left
                 akce("focus-window", "--id", wid)
                 akce("consume-or-expel-window-left", "--id", wid)
             else:
@@ -294,18 +294,18 @@ def obnovit_sezeni(cesta):
             posledni_v_ws[ws_klic] = wid
         obnovena.append((wid, z))
 
-    # výšky oken ve sloupcích s více dlaždicemi (poslední dorovná zbytek)
+    # window heights in columns with several tiles (the last one takes the rest)
     for clenove in sloupce.values():
         if len(clenove) > 1:
             for wid, z in clenove[:-1]:
                 akce("set-window-height", "--id", wid, z["height"])
 
-    # zaměřit okno, které bylo zaměřené při uložení
+    # focus the window that was focused when saving
     for wid, z in obnovena:
         if z.get("focused"):
             akce("focus-window", "--id", wid)
             break
-    print(f"Obnoveno {len(obnovena)} z {len(zaznamy)} oken ze sezení „{data.get('nazev')}“.")
+    print(f"Restored {len(obnovena)} of {len(zaznamy)} windows from session \"{data.get('nazev')}\".")
 
 
 def pockat_na_niri(timeout=20.0):
@@ -313,7 +313,7 @@ def pockat_na_niri(timeout=20.0):
     while time.monotonic() < konec:
         try:
             if niri_json("outputs"):
-                time.sleep(1.0)     # výstupy a workspace se ještě dosazují
+                time.sleep(1.0)     # outputs and workspaces are still settling
                 return True
         except (subprocess.CalledProcessError, json.JSONDecodeError, FileNotFoundError):
             pass
@@ -321,7 +321,7 @@ def pockat_na_niri(timeout=20.0):
     return False
 
 
-# ---------------------------------------------------------------- ostatní
+# ---------------------------------------------------------------- other
 
 def nazvy_sezeni():
     if not os.path.isdir(ADRESAR):
@@ -333,12 +333,12 @@ def nazvy_sezeni():
 def nastavit_vychozi(nazev, tise=False):
     cil = f"{nazev}.json"
     if not os.path.exists(os.path.join(ADRESAR, cil)):
-        sys.exit(f"Sezení „{nazev}“ neexistuje.")
+        sys.exit(f"Session \"{nazev}\" does not exist.")
     if os.path.lexists(VYCHOZI):
         os.remove(VYCHOZI)
     os.symlink(cil, VYCHOZI)
     if not tise:
-        print(f"Výchozí sezení: {nazev}")
+        print(f"Default session: {nazev}")
 
 
 def notifikace(text):
@@ -360,10 +360,10 @@ def main():
     elif prepinac == "-n":
         cesta = os.path.join(ADRESAR, f"{args[1]}.json") if len(args) > 1 else VYCHOZI
         if not os.path.exists(cesta):
-            print(f"Sezení {cesta} neexistuje, nic se neobnovuje.", file=sys.stderr)
+            print(f"Session {cesta} does not exist, nothing to restore.", file=sys.stderr)
             return
         if not pockat_na_niri():
-            sys.exit("niri neodpovídá.")
+            sys.exit("niri is not responding.")
         obnovit_sezeni(cesta)
     elif prepinac == "-l":
         vychozi = os.path.basename(os.path.realpath(VYCHOZI))[:-5] if os.path.lexists(VYCHOZI) else None

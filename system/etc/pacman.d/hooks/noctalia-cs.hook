@@ -1,4 +1,4 @@
-# Po instalaci nebo aktualizaci noctalie vrátí český překlad z noctalia-cs.
+# After noctalia is installed or upgraded, restore the Czech translation from noctalia-cs.
 # Instalace: sudo install -Dm644 noctalia-cs.hook /etc/pacman.d/hooks/noctalia-cs.hook
 [Trigger]
 Operation = Install
@@ -7,6 +7,6 @@ Type = Package
 Target = noctalia
 
 [Action]
-Description = Instaluji český překlad noctalie (noctalia-cs)...
+Description = Installing Czech translation of noctalia (noctalia-cs)...
 When = PostTransaction
 Exec = /usr/bin/install -m644 /usr/local/share/noctalia-cs/cs.json /usr/share/noctalia/assets/translations/cs.json

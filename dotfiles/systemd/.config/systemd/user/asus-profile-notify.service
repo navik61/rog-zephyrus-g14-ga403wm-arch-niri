@@ -1,5 +1,5 @@
 [Unit]
-Description=Notifikace při změně ASUS power/fan profilu
+Description=Notification on ASUS power/fan profile change
 
 [Service]
 ExecStart=%h/.config/niri/scripts/asus-profile-watch.sh

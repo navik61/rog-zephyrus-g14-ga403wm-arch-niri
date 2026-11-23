@@ -12,6 +12,9 @@ Repo neobsahuje žádná osobní data — místo nich jsou zástupné hodnoty (`
 
 > Ověřeno 2026-11: jádro `linux` 7.3.5, `nvidia-open-dkms` 620.73, Mesa 26.3, niri 26.04,
 > noctalia 5.6, asusctl 6.5, supergfxctl 5.2.
+>
+> Komentáře a hlášky v konfiguracích a skriptech jsou anglicky (kvůli mezinárodnímu publiku),
+> dokumentace je v češtině i angličtině (`*.en.md`).
 
 ## Hardware
 
