@@ -2,3 +2,6 @@
 *.bak*
 *~
 __pycache__/
+
+# Local Claude Code context
+CLAUDE.md
