@@ -2,7 +2,7 @@
 
 [Čeština](gpu-nvidia-amd.md) | **English**
 
-Verified 2026-11-20 on: kernel `linux` 7.3.5-arch1-1, `nvidia-open-dkms` 620.73.04,
+Verified 2026-11-25 on: kernel `linux` 7.3.6-arch1-1, `nvidia-open-dkms` 620.73.04,
 Mesa 26.3.1, systemd-boot + UKI, niri compositor (uwsm).
 
 ## Hardware

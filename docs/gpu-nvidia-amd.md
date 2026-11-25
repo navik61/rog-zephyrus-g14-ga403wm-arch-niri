@@ -2,7 +2,7 @@
 
 **Čeština** | [English](gpu-nvidia-amd.en.md)
 
-Ověřeno 2026-11-20 na: jádro `linux` 7.3.5-arch1-1, `nvidia-open-dkms` 620.73.04,
+Ověřeno 2026-11-25 na: jádro `linux` 7.3.6-arch1-1, `nvidia-open-dkms` 620.73.04,
 Mesa 26.3.1, systemd-boot + UKI, kompozitor niri (uwsm).
 
 ## Hardware

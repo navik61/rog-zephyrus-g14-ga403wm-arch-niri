@@ -10,7 +10,7 @@ booting via **systemd-boot + UKI**, the **niri** compositor started through **uw
 The repo contains no personal data — placeholders (`<VAS-PARTUUID>`, `/home/USER`, …) are used
 instead and need to be replaced.
 
-> Tested 2026-11: kernel `linux` 7.3.5, `nvidia-open-dkms` 620.73, Mesa 26.3, niri 26.04,
+> Tested 2026-11: kernel `linux` 7.3.6, `nvidia-open-dkms` 620.73, Mesa 26.3, niri 26.04,
 > noctalia 5.6, asusctl 6.5, supergfxctl 5.2.
 >
 > Comments and messages in the config files and scripts are in English; all documentation
